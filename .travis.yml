@@ -1,0 +1,47 @@
+os:
+- linux
+services:
+- docker
+language: node_js
+node_js:
+- 10.15.0
+jdk:
+- oraclejdk8
+sudo: false
+cache:
+  directories:
+  - node
+  - node_modules
+  - "$HOME/.gradle"
+env:
+  global:
+  - NODE_VERSION=10.15.0
+  - SPRING_OUTPUT_ANSI_ENABLED=ALWAYS
+  - SPRING_JPA_SHOW_SQL=false
+  - JHI_DISABLE_WEBPACK_LOGS=true
+  - secure: lKkC5aj+X6LA01osoU48DwnLNwrG6I8gYqwdtQCmEZR2Ke9407HfaMtJsCPrgl3tfiYluQep2XJduFRYIePI3hq+RkY4FB8gnRVP/bkXpckjvrb9CgclvvxH/sWETcHaHww9/Eaqt1sn3Zs+ENJhJ+QSppYcof5zYUm/bjBdjBNU1/5wWyewApNzo2WgMzMEeWIe7+qsX5rwRYM41s/qySPLrinsVFlormC6x8vTLqc5eIK4Wfk2agkVEQbQ/NB5KTRBFiFyx2H/nS22CotWiqbfQ/s1EW2lAOI3fK37YuuEnQoQf/hKAAkYSTUndc0E27GDgAVHb2KxV7O+bW1wrPmSYs3gTWeFLarQsSgyWQP3mZHe8xdEn8BghsDDZbeHfx2GPF+jmuEbOPeo1WRGamLzNg4KPwCaF72mSzMbI9+nvqTyQpTY8hNcSInTAlMqXDfg2zTsJqnHuYdcDFNN1CLtuUZo8jAj90VinlamRql1JsCm46Pcc4zfrTIJfM63tYfU8L5jQIcJ8GwDvqSOk7GZMTuCCUFyLiWWya1stOPWT8Gh5qT0IZC6CS/rWZ93X/oTBhIOuH6sg7W28DBotscRPfnRKUJJ/cJP2F0kLZ04x+dsjOXIe6J1UbOrkIzzk/uQqx2OP2fInvHeSbbgkGKWkIZD6IyWPQ6DCDocgBE=
+  - secure: bDV9/Xd4yhX7mJ2e8TVcLdpGRn2PZqQYwc7vVn6ks6q9zQw1TSqdmwmfc2/t6OGlfeoIp9tOhyFjX5ppCOpqu/ERfo2hbYZPH7Tt3M/sQs5VCSwStTwT8noYzb9qJW9+Uc+mHYugpnZg6RQAnaPs6vKtgXbJQ+m12C033CI0sZqGm5AscmeZPkrB8XJSTk+EuNud64EgrBZmhLVxQpVgpBfFKp5zHQUL3DmyswAekIMdVweKbqdCHywvogFw+9oroHgvahErqm7pfarbzFrRIKm66A8wyZaRWz8tjTSYl5eO1qv3OPY60vvoAovmETE8HhHCuEJz5g8VLZsRDliGLzTQDTOnP96NnbxgAXI6gvMpniNK2bSpdRq3IJc28VM7m21aeCuVOExP9BMu0Qn4bvzDZjZH7rNnaF0zI32/evY19Tm0EODDhpEBNq9k66zDOYUNwGGfMqUq7tU/xWsv3/l5y+IB9xT6pIeHBi2Lyo2+33GG/S7UJwsl7paunYof35s+Pv/iE/mABymExW+MtEMqBM39TsEkPo2w2AGxbPTU4qg/x/G2qMsfTBO3h0oYMARfZI7+mE4Lgc0hh9+PY+XWMnpQcOUG8kUJ2Sv9Loi7nUdbsL0jI/UZoIrL+ribzgXis2+US3tWdBI0a8TKTHrcFSb3u5XMWIiFNLbP7uM=
+before_install:
+- jdk_switcher use oraclejdk8
+- java -version
+- sudo /etc/init.d/mysql stop
+- sudo /etc/init.d/postgresql stop
+- nvm install $NODE_VERSION
+- npm install -g npm
+- node -v
+- npm -v
+install:
+- npm install
+script:
+- chmod +x gradlew
+- "./gradlew clean test"
+- "./gradlew npm_run_test -PnodeInstall --no-daemon"
+- "./gradlew sonarqube --no-daemon -Dsonar.organization=lwoerdeman-github -Dsonar.host.url=https://sonarcloud.io
+  -Dsonar.login=$SONAR_TOKEN"
+- "./gradlew bootWar -Pprod -x test"
+- "./gradlew deployHeroku"
+notifications:
+  webhooks:
+    on_success: change
+    on_failure: always
+    on_start: false
