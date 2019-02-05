@@ -39,7 +39,12 @@ script:
 - "./gradlew sonarqube --no-daemon -Dsonar.organization=lwoerdeman-github -Dsonar.host.url=https://sonarcloud.io
   -Dsonar.login=$SONAR_TOKEN"
 - "./gradlew bootWar -Pprod -x test"
-- "./gradlew deployHeroku"
+deploy:
+    skip_cleanup: true
+    provider: script
+    script: "./gradlew deployHeroku"
+    on:
+        branch: master
 notifications:
   webhooks:
     on_success: change
